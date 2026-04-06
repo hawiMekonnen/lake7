@@ -1,0 +1,2 @@
+﻿DELETE FROM Users;
+TRUNCATE TABLE Users;

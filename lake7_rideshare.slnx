@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+  </Folder>
+  <Project Path="lake7.Application/lake7.Application.csproj" />
+  <Project Path="lake7.Domain/lake7.Domain.csproj" />
+  <Project Path="lake7.Infrastructure/lake7.Infrastructure.csproj" />
+  <Project Path="lake7.WebAPI/lake7.WebAPI.csproj" />
+</Solution>

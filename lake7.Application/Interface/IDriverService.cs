@@ -1,0 +1,13 @@
+﻿using lake7.Domain.Entities;
+
+namespace lake7.Application.Interface
+{
+    public interface IDriverService
+    {
+        Task<Driver> RegisterDriverAsync(Driver driver);
+        Task<List<Driver>> GetDriversAsync();
+        Task<Driver?> GetDriverByIdAsync(Guid id);
+        Task<Driver?> UpdateDriverAsync(Driver driver, Guid id);
+        Task<bool> SetAvailabilityAsync(Guid id, bool isAvailable);
+    }
+}
