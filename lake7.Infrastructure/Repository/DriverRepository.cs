@@ -30,8 +30,12 @@ namespace lake7.Infrastructure.Repository
         {
             return await _context.Drivers.FindAsync(id);
         }
-
+        public async Task<Driver?> GetByEmailAsync(string email)
+        {
+            return await _context.Drivers.FirstOrDefaultAsync(d => d.Email == email);
+        }
         public async Task<Driver?> UpdateAsync(Driver driver)
+
         {
             _context.Drivers.Update(driver);
             await _context.SaveChangesAsync();

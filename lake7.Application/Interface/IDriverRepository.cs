@@ -10,6 +10,7 @@ namespace lake7.Application.Interface
     {
         Task<Driver> AddAsync(Driver driver);
         Task<IEnumerable<Driver>> GetAllAsync();
+        Task<Driver?> GetByEmailAsync(string email);
         Task<Driver?> GetByIdAsync(Guid id);
         Task<Driver?> UpdateAsync(Driver driver);
     }

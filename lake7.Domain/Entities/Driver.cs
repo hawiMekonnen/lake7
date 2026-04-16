@@ -6,6 +6,7 @@ namespace lake7.Domain.Entities
     {
         public Guid Id { get; set; }
         public required string Name { get; set; }
+        public required string Password { get; set; }
         public required string VehicleInfo { get; set; }
         public required string LicensePlate { get; set; }
         public required string VehicleType { get; set; }
@@ -21,5 +22,6 @@ namespace lake7.Domain.Entities
         public DateTime? UpdatedAt { get; set; }
         public DateTime? CreatedAt { get; set; }
         public DateTime? LastActiveAt { get; set; }
+        
     }
 }

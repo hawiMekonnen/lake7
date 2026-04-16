@@ -11,10 +11,12 @@ namespace lake7.WebAPI.Controllers
     public class DriverController : ControllerBase
     {
         private readonly IDriverService _driverService;
+        private readonly IConfiguration _config;
 
-        public DriverController(IDriverService driverService)
+        public DriverController(IDriverService driverService, IConfiguration config)
         {
             _driverService = driverService;
+            _config = config;
         }
 
         [HttpPost("register")]
@@ -22,6 +24,24 @@ namespace lake7.WebAPI.Controllers
         {
             var newDriver = await _driverService.RegisterDriverAsync(driver);
             return CreatedAtAction(nameof(GetDriverById), new { id = newDriver.Id }, DriverMapper.ToDto(newDriver));
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginDto dto)
+        {
+            var driver = await _driverService.ValidateDriverAsync(dto.Email, dto.Password);
+
+            if (driver == null)
+                return Unauthorized("Invalid email or password");
+
+            var token = JwtHelper.GenerateToken(
+                driver.Id,
+                driver.Email,
+                _config["Jwt:Key"]!,
+                _config["Jwt:Issuer"]!,
+                _config["Jwt:Audience"]!);
+
+            return Ok(new { token });
         }
 
         [HttpGet("getAll")]

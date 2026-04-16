@@ -6,6 +6,7 @@ namespace lake7.Application.Interface
     {
         Task<Driver> RegisterDriverAsync(Driver driver);
         Task<List<Driver>> GetDriversAsync();
+        Task<Driver?> ValidateDriverAsync(string email, string password);
         Task<Driver?> GetDriverByIdAsync(Guid id);
         Task<Driver?> UpdateDriverAsync(Driver driver, Guid id);
         Task<bool> SetAvailabilityAsync(Guid id, bool isAvailable);
