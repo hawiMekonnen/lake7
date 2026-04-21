@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using lake7.Infrastructure.Context;
 
@@ -11,9 +12,11 @@ using lake7.Infrastructure.Context;
 namespace lake7.Infrastructure.Migrations
 {
     [DbContext(typeof(Lake7DbContext))]
-    partial class Lake7DbContextModelSnapshot : ModelSnapshot
+    [Migration("20260420114134_AddedAdmin")]
+    partial class AddedAdmin
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

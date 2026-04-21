@@ -2,8 +2,10 @@
 using lake7.Application.Helpers;
 using lake7.Application.Interface;
 using lake7.Domain.Entities;
+using lake7.Domain.Enums; // import DeliveryStatus
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace lake7.WebAPI.Controllers
 {
@@ -42,7 +44,7 @@ namespace lake7.WebAPI.Controllers
         }
 
         [HttpPatch("{id}/status")]
-        public async Task<IActionResult> UpdateDeliveryStatus(Guid id, [FromQuery] string status)
+        public async Task<IActionResult> UpdateDeliveryStatus(Guid id, [FromQuery] RideStatus status)
         {
             var updatedDelivery = await _deliveryService.UpdateDeliveryStatusAsync(id, status);
             if (updatedDelivery == null) return NotFound();

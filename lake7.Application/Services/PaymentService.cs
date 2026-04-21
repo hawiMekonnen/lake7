@@ -1,5 +1,6 @@
-﻿using lake7.Domain.Entities;
-using lake7.Application.Interface;
+﻿using lake7.Application.Interface;
+using lake7.Domain.Entities;
+using lake7.Domain.Enums;
 
 namespace lake7.Application.Services
 {
@@ -12,9 +13,9 @@ namespace lake7.Application.Services
             _paymentRepository = paymentRepository;
         }
 
-        public async Task<Payment> ProcessPaymentAsync(Payment payment)
+        public async Task<Payment> CreatePaymentAsync(Payment payment)
         {
-            payment.Status = "Processed";
+            payment.Status = PaymentStatus.Pending;
             payment.CreatedAt = DateTime.UtcNow;
             return await _paymentRepository.AddAsync(payment);
         }
@@ -29,13 +30,12 @@ namespace lake7.Application.Services
             return await _paymentRepository.GetByIdAsync(id);
         }
 
-        public async Task<Payment?> UpdatePaymentStatusAsync(Guid id, string status)
+        public async Task<Payment?> UpdatePaymentStatusAsync(Guid id, PaymentStatus status)
         {
             var payment = await _paymentRepository.GetByIdAsync(id);
             if (payment == null) return null;
 
             payment.Status = status;
-            payment.UpdatedAt = DateTime.UtcNow;
             return await _paymentRepository.UpdateAsync(payment);
         }
     }

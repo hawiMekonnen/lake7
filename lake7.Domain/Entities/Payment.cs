@@ -1,21 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using lake7.Domain.Enums;
 
 namespace lake7.Domain.Entities
 {
-    public class Payment
+    public class Payment: CommonEntity
     {
-        public Guid Id { get; set; }
         public Guid UserId { get; set; }
         public Guid? RideId { get; set; }
         public Guid? DeliveryId { get; set; }
-        public required decimal Amount { get; set; }
+        public User User { get; set; } = null!;
+        public Ride? Ride { get; set; }
+        public Delivery? Delivery { get; set; }
+        public decimal Amount { get; set; }
         public string Method { get; set; } = string.Empty;
-        public string Status { get; set; } = "Pending";
-        public DateTime TransactionDate { get; set; }= DateTime.Now;
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public DateTime UpdatedAt { get; set; } = DateTime.Now;
+        public PaymentStatus Status { get; set; }
+        public DateTime TransactionDate { get; set; } = DateTime.UtcNow;
     }
 }
-

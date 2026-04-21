@@ -78,6 +78,14 @@ namespace lake7.Application.Services
             await _driverRepository.UpdateAsync(driver);
             return true;
         }
+        public async Task<Driver?> SetApprovalStatusAsync(Guid id, bool isApproved)
+        {
+            var driver = await _driverRepository.GetByIdAsync(id);
+            if (driver == null) return null;
+
+            driver.IsApproved = isApproved;
+            return await _driverRepository.UpdateAsync(driver);
+        }
 
     }
 }

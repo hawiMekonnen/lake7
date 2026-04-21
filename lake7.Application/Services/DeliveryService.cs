@@ -1,4 +1,5 @@
 ﻿using lake7.Domain.Entities;
+using lake7.Domain.Enums; // import DeliveryStatus
 using lake7.Application.Interface;
 
 namespace lake7.Application.Services
@@ -14,7 +15,7 @@ namespace lake7.Application.Services
 
         public async Task<Delivery> RequestDeliveryAsync(Delivery delivery)
         {
-            delivery.Status = "Requested";
+            delivery.Status = RideStatus.Pending;
             delivery.RequestedAt = DateTime.UtcNow;
             return await _deliveryRepository.AddAsync(delivery);
         }
@@ -29,7 +30,7 @@ namespace lake7.Application.Services
             return await _deliveryRepository.GetByIdAsync(id);
         }
 
-        public async Task<Delivery?> UpdateDeliveryStatusAsync(Guid id, string status)
+        public async Task<Delivery?> UpdateDeliveryStatusAsync(Guid id, RideStatus status)
         {
             var delivery = await _deliveryRepository.GetByIdAsync(id);
             if (delivery == null) return null;
