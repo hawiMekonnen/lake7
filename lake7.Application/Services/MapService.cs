@@ -1,31 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using lake7.Application.Interface;
+using System.Text.Json;
 
-using System.Net.Http;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using lake7.Application.Interface;
-
-public class MapService : IMapService
+namespace lake7.Application.Services
 {
-    private readonly HttpClient _httpClient;
-    private readonly IConfiguration _config;
-
-    public MapService(IHttpClientFactory factory, IConfiguration config)
+    public class MapService : IMapService
     {
-        _httpClient = factory.CreateClient("MapsClient");
-        _config = config;
-    }
+        public async Task<List<object>> GetDirectionsAsync(string origin, string destination)
+        {
+            var client = new HttpClient();
 
-    public async Task<string> GetDirectionsAsync(string origin, string destination)
-    {
-        var apiKey = _config["GoogleMaps:ApiKey"];
+            var url = $"http://router.project-osrm.org/route/v1/driving/" +
+                      $"{origin.Replace(",", "%2C")};{destination.Replace(",", "%2C")}" +
+                      "?overview=full&geometries=geojson";
 
-        var url = $"maps/api/directions/json?origin={origin}&destination={destination}&key={apiKey}";
+            var response = await client.GetStringAsync(url);
 
-        var response = await _httpClient.GetAsync(url);
+            var json = JsonDocument.Parse(response);
 
-        return await response.Content.ReadAsStringAsync();
+            var coords = json
+                .RootElement
+                .GetProperty("routes")[0]
+                .GetProperty("geometry")
+                .GetProperty("coordinates");
+
+            var result = coords.EnumerateArray()
+                .Select(c => new
+                {
+                    latitude = c[1].GetDouble(),
+                    longitude = c[0].GetDouble()
+                }).ToList<object>();
+
+            return result;
+        }
     }
 }

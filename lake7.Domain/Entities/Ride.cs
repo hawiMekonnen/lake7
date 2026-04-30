@@ -1,7 +1,5 @@
-﻿using lake7.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
+using lake7.Domain.Enums;
 
 namespace lake7.Domain.Entities
 {
@@ -17,13 +15,13 @@ namespace lake7.Domain.Entities
         public double PickupLongitude { get; set; }
         public double DropLatitude { get; set; }
         public double DropLongitude { get; set; }
-        public DateTime RequestedAt { get; set; }= DateTime.Now;
+        public DateTime RequestedAt { get; set; } = DateTime.UtcNow;
         public DateTime? CompletedAt { get; set; }
 
-        // Navigation properties
+        // Navigation
         public User? User { get; set; }
         public Driver? Driver { get; set; }
-
+        public ICollection<Order> Orders { get; set; } = new List<Order>();
+        public ICollection<Payment> Payments { get; set; } = new List<Payment>();
     }
 }
-

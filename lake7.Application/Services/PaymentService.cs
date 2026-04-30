@@ -1,42 +1,73 @@
 ﻿using lake7.Application.Interface;
 using lake7.Domain.Entities;
 using lake7.Domain.Enums;
+using Microsoft.Extensions.Logging;
 
-namespace lake7.Application.Services
+public class PaymentService : IPaymentService
 {
-    public class PaymentService : IPaymentService
+    private readonly IPaymentRepository _paymentRepository;
+    private readonly ILogger<PaymentService> _logger;
+
+    public PaymentService(IPaymentRepository paymentRepository, ILogger<PaymentService> logger)
     {
-        private readonly IPaymentRepository _paymentRepository;
+        _paymentRepository = paymentRepository;
+        _logger = logger;
+    }
 
-        public PaymentService(IPaymentRepository paymentRepository)
+    // Main payment processing (simulate gateway)
+    public async Task<Payment> ProcessPaymentAsync(Guid userId, Guid? rideId, decimal amount, string method)
+    {
+        var payment = new Payment
         {
-            _paymentRepository = paymentRepository;
-        }
+            UserId = userId,
+            RideId = rideId,
+            Amount = amount,
+            Method = method,
+            Status = PaymentStatus.Pending,
+            CreatedAt = DateTime.UtcNow
+        };
 
-        public async Task<Payment> CreatePaymentAsync(Payment payment)
+        try
         {
-            payment.Status = PaymentStatus.Pending;
-            payment.CreatedAt = DateTime.UtcNow;
+            // simulate external gateway call
+            payment.Status = PaymentStatus.Completed;
+            payment.UpdatedAt = DateTime.UtcNow;
             return await _paymentRepository.AddAsync(payment);
         }
-
-        public async Task<List<Payment>> GetAllPaymentsAsync()
+        catch (Exception ex)
         {
-            return (await _paymentRepository.GetAllAsync()).ToList();
-        }
-
-        public async Task<Payment?> GetPaymentByIdAsync(Guid id)
-        {
-            return await _paymentRepository.GetByIdAsync(id);
-        }
-
-        public async Task<Payment?> UpdatePaymentStatusAsync(Guid id, PaymentStatus status)
-        {
-            var payment = await _paymentRepository.GetByIdAsync(id);
-            if (payment == null) return null;
-
-            payment.Status = status;
-            return await _paymentRepository.UpdateAsync(payment);
+            _logger.LogError(ex, "Payment failed");
+            payment.Status = PaymentStatus.Failed;
+            payment.UpdatedAt = DateTime.UtcNow;
+            return await _paymentRepository.AddAsync(payment);
         }
     }
+
+    public async Task<Payment?> GetPaymentByIdAsync(Guid id)
+    {
+        return await _paymentRepository.GetByIdAsync(id);
+    }
+
+    public async Task<Payment> CreatePaymentAsync(Payment payment)
+    {
+        payment.Status = PaymentStatus.Pending;
+        payment.CreatedAt = DateTime.UtcNow;
+        return await _paymentRepository.AddAsync(payment);
+    }
+
+    public async Task<List<Payment>> GetAllPaymentsAsync()
+    {
+        return (await _paymentRepository.GetAllAsync()).ToList();
+    }
+
+    public async Task<Payment?> UpdatePaymentStatusAsync(Guid id, PaymentStatus status)
+    {
+        var payment = await _paymentRepository.GetByIdAsync(id);
+        if (payment == null) return null;
+
+        payment.Status = status;
+        payment.UpdatedAt = DateTime.UtcNow;
+        return await _paymentRepository.UpdateAsync(payment);
+    }
 }
+

@@ -1,21 +1,22 @@
+using System.Text;
 using lake7.Application.Interface;
 using lake7.Application.Services;
 using lake7.Infrastructure.Context;
 using lake7.Infrastructure.Repositories;
 using lake7.Infrastructure.Repository;
+using lake7.WebAPI.Hubs;
+using lake7.WebAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Controllers
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Database
 builder.Services.AddDbContext<Lake7DbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Database")));
 
@@ -40,7 +41,12 @@ builder.Services.AddScoped<IDriverLocationService, DriverLocationService>();
 
 builder.Services.AddScoped<IMapService, MapService>();
 
-// 🔥 Backend Proxy HttpClient (IMPORTANT)
+builder.Services.AddScoped<INotificationService, NotificationService>();
+
+
+builder.Services.AddSignalR();
+
+//Backend Proxy HttpClient
 builder.Services.AddHttpClient("MapsClient", client =>
 {
     client.BaseAddress = new Uri("https://maps.googleapis.com/");
@@ -52,28 +58,55 @@ var jwtSettings = builder.Configuration.GetSection("Jwt");
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        options.RequireHttpsMetadata = false; // important for local dev
+        options.SaveToken = true;
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
+
             ValidIssuer = jwtSettings["Issuer"],
             ValidAudience = jwtSettings["Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtSettings["Key"]!))
+                Encoding.UTF8.GetBytes(jwtSettings["Key"]!)),
+
+            ClockSkew = TimeSpan.Zero // remove delay tolerance
         };
 
         options.Events = new JwtBearerEvents
         {
+            OnMessageReceived = context =>
+            {
+                var token = context.Request.Headers["Authorization"]
+                    .FirstOrDefault()?.Split(" ").Last();
+
+                Console.WriteLine("🔑 RAW HEADER: " + context.Request.Headers["Authorization"]);
+                Console.WriteLine("🔑 EXTRACTED TOKEN: " + token);
+
+                if (!string.IsNullOrEmpty(token))
+                {
+                    context.Token = token;
+                }
+
+                return Task.CompletedTask;
+            },
+
             OnAuthenticationFailed = context =>
             {
-                Console.WriteLine($"Auth failed: {context.Exception.Message}");
+                Console.WriteLine("❌ AUTH FAILED: " + context.Exception.Message);
+                return Task.CompletedTask;
+            },
+
+            OnTokenValidated = context =>
+            {
+                Console.WriteLine("✅ TOKEN VALIDATED");
                 return Task.CompletedTask;
             }
         };
     });
-
 builder.Services.AddAuthorization();
 
 // CORS (React Native friendly)
@@ -88,7 +121,11 @@ builder.Services.AddCors(options =>
     });
 });
 
+
+
 var app = builder.Build();
+
+
 
 app.UseCors("AllowAll");
 
@@ -99,12 +136,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// ⚠️ Always enable HTTPS
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<DriverHub>("/driverHub"); // expose hub endpoint
 
 app.Run();

@@ -10,19 +10,30 @@ namespace lake7.Application.Services
         private readonly IRideRepository _rideRepository;
         private readonly IDriverLocationService _driverLocationService;
         private readonly ILogger<RideService> _logger;
+        private readonly INotificationService _notificationService;
 
-        public RideService(IRideRepository rideRepository, IDriverLocationService driverLocationService, ILogger<RideService> logger)
+        public RideService(
+            IRideRepository rideRepository,
+            IDriverLocationService driverLocationService,
+            ILogger<RideService> logger,
+            INotificationService notificationService)
         {
             _rideRepository = rideRepository;
             _driverLocationService = driverLocationService;
             _logger = logger;
+            _notificationService = notificationService;
         }
 
         public async Task<Ride> RequestRideAsync(Ride ride)
         {
             ride.Status = RideStatus.Pending;
             ride.RequestedAt = DateTime.UtcNow;
-            return await _rideRepository.AddAsync(ride);
+            var savedRide = await _rideRepository.AddAsync(ride);
+
+            // Notify all drivers in real time
+            await _notificationService.NotifyAllDriversAsync(savedRide);
+
+            return savedRide;
         }
 
         public async Task<List<Ride>> GetAllRidesAsync()
@@ -44,9 +55,11 @@ namespace lake7.Application.Services
             ride.UpdatedAt = DateTime.UtcNow;
             return await _rideRepository.UpdateAsync(ride);
         }
+
         public async Task<Ride?> AcceptRideAsync(Guid rideId, Guid driverId)
         {
             var ride = await _rideRepository.GetByIdAsync(rideId);
+
             if (ride == null) return null;
 
             // If already accepted, lock it
@@ -62,8 +75,6 @@ namespace lake7.Application.Services
             return await _rideRepository.UpdateAsync(ride);
         }
 
-
-
         public async Task<(Ride ride, List<DriverLocation> nearbyDrivers)> RequestRideWithMatchingAsync(Ride ride, double radiusKm)
         {
             ride.Status = RideStatus.Pending;
@@ -75,7 +86,8 @@ namespace lake7.Application.Services
 
             foreach (var driver in nearbyDrivers)
             {
-                _logger.LogInformation($"Stub notify driver {driver.DriverId} for ride {ride.Id}");
+                await _notificationService.NotifyDriverAsync(driver.DriverId, savedRide);
+                _logger.LogInformation($"Notified driver {driver.DriverId} for ride {ride.Id}");
             }
 
             return (savedRide, nearbyDrivers);
@@ -104,6 +116,5 @@ namespace lake7.Application.Services
 
             return await _rideRepository.UpdateAsync(ride);
         }
-
     }
 }

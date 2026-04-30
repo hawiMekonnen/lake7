@@ -82,7 +82,7 @@ namespace lake7.WebAPI.Controllers
         [HttpPost("{id}/location")]
         public async Task<IActionResult> UpdateLocation(Guid id, [FromBody] LocationDto dto)
         {
-            var updatedLocation = await _driverLocationService.UpdateLocationAsync(id, dto.Latitude, dto.Longitude);
+            var updatedLocation = await _driverLocationService.UpdateLocationAsync(id, dto.Latitude, dto.Longitude,dto.LicensePlate,dto.VehicleType);
             if (updatedLocation == null) return NotFound();
             return Ok(updatedLocation);
 

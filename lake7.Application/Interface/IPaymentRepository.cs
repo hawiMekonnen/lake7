@@ -10,3 +10,4 @@ namespace lake7.Application.Interface
         Task<Payment?> UpdateAsync(Payment payment);
     }
 }
+

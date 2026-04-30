@@ -28,7 +28,10 @@ namespace lake7.Infrastructure.Repository
 
         public async Task<Payment?> GetByIdAsync(Guid id)
         {
-            return await _context.Payments.FindAsync(id);
+            return await _context.Payments
+                .Include(p => p.User)
+                .Include(p => p.Ride)
+                .FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public async Task<Payment?> UpdateAsync(Payment payment)

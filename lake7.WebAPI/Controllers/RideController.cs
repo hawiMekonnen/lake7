@@ -5,7 +5,8 @@ using lake7.Domain.Entities;
 using lake7.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 namespace lake7.WebAPI.Controllers
 {
     [ApiController]
@@ -21,12 +22,26 @@ namespace lake7.WebAPI.Controllers
             _mapService = mapService;
         }
 
-        // ✅ New Ride Matching endpoint
         [Authorize]
         [HttpPost("request")]
-        public async Task<IActionResult> RequestRide([FromBody] Ride ride)
+        public async Task<IActionResult> RequestRide([FromBody] RideRequestDto dto)
         {
-            // Use ride matching service
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userIdClaim == null)
+                return Unauthorized("Invalid token");
+
+            var ride = new Ride
+            {
+                UserId = Guid.Parse(userIdClaim),
+                PickupLocation = dto.PickupLocation,
+                PickupLatitude = dto.PickupLatitude,
+                PickupLongitude = dto.PickupLongitude,
+                DropoffLocation = dto.DropoffLocation,
+                DropLatitude = dto.DropLatitude,
+                DropLongitude = dto.DropLongitude
+            };
+
             var (newRide, nearbyDrivers) = await _rideService.RequestRideWithMatchingAsync(ride, 3);
 
             return Ok(new

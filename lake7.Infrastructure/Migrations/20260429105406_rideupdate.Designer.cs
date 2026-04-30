@@ -12,8 +12,8 @@ using lake7.Infrastructure.Context;
 namespace lake7.Infrastructure.Migrations
 {
     [DbContext(typeof(Lake7DbContext))]
-    [Migration("20260420070440_InitWithDriverLocation")]
-    partial class InitWithDriverLocation
+    [Migration("20260429105406_rideupdate")]
+    partial class rideupdate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -66,6 +66,10 @@ namespace lake7.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DriverId");
+
+                    b.HasIndex("UserId");
+
                     b.ToTable("Deliveries");
                 });
 
@@ -84,6 +88,9 @@ namespace lake7.Infrastructure.Migrations
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsApproved")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsAvailable")
                         .HasColumnType("bit");
@@ -147,17 +154,74 @@ namespace lake7.Infrastructure.Migrations
                     b.Property<double>("Latitude")
                         .HasColumnType("float");
 
+                    b.Property<string>("LicensePlate")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<double>("Longitude")
                         .HasColumnType("float");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("VehicleType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("DriverId");
 
                     b.ToTable("DriverLocations");
+                });
+
+            modelBuilder.Entity("lake7.Domain.Entities.Order", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("DeliveryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("DeliveryId1")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("RideId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("RideId1")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeliveryId");
+
+                    b.HasIndex("DeliveryId1");
+
+                    b.HasIndex("RideId");
+
+                    b.HasIndex("RideId1");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Orders");
                 });
 
             modelBuilder.Entity("lake7.Domain.Entities.Payment", b =>
@@ -179,6 +243,9 @@ namespace lake7.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("RideId")
                         .HasColumnType("uniqueidentifier");
 
@@ -197,6 +264,14 @@ namespace lake7.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DeliveryId");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("RideId");
+
+                    b.HasIndex("UserId");
+
                     b.ToTable("Payments");
                 });
 
@@ -212,16 +287,28 @@ namespace lake7.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("DriverId")
+                    b.Property<Guid?>("DriverId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<double>("DropLatitude")
+                        .HasColumnType("float");
+
+                    b.Property<double>("DropLongitude")
+                        .HasColumnType("float");
 
                     b.Property<string>("DropoffLocation")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<double>("PickupLatitude")
+                        .HasColumnType("float");
+
                     b.Property<string>("PickupLocation")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("PickupLongitude")
+                        .HasColumnType("float");
 
                     b.Property<DateTime>("RequestedAt")
                         .HasColumnType("datetime2");
@@ -274,6 +361,25 @@ namespace lake7.Infrastructure.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("lake7.Domain.Entities.Delivery", b =>
+                {
+                    b.HasOne("lake7.Domain.Entities.Driver", "Driver")
+                        .WithMany("Deliveries")
+                        .HasForeignKey("DriverId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("lake7.Domain.Entities.User", "User")
+                        .WithMany("Deliveries")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Driver");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("lake7.Domain.Entities.DriverLocation", b =>
                 {
                     b.HasOne("lake7.Domain.Entities.Driver", "Driver")
@@ -285,16 +391,80 @@ namespace lake7.Infrastructure.Migrations
                     b.Navigation("Driver");
                 });
 
-            modelBuilder.Entity("lake7.Domain.Entities.Ride", b =>
+            modelBuilder.Entity("lake7.Domain.Entities.Order", b =>
                 {
-                    b.HasOne("lake7.Domain.Entities.Driver", "Driver")
+                    b.HasOne("lake7.Domain.Entities.Delivery", "Delivery")
                         .WithMany()
-                        .HasForeignKey("DriverId")
+                        .HasForeignKey("DeliveryId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("lake7.Domain.Entities.Delivery", null)
+                        .WithMany("Orders")
+                        .HasForeignKey("DeliveryId1");
+
+                    b.HasOne("lake7.Domain.Entities.Ride", "Ride")
+                        .WithMany()
+                        .HasForeignKey("RideId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("lake7.Domain.Entities.Ride", null)
+                        .WithMany("Orders")
+                        .HasForeignKey("RideId1");
+
+                    b.HasOne("lake7.Domain.Entities.User", "User")
+                        .WithMany("Orders")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Delivery");
+
+                    b.Navigation("Ride");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("lake7.Domain.Entities.Payment", b =>
+                {
+                    b.HasOne("lake7.Domain.Entities.Delivery", "Delivery")
+                        .WithMany("Payments")
+                        .HasForeignKey("DeliveryId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("lake7.Domain.Entities.Order", "Order")
+                        .WithMany("Payments")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("lake7.Domain.Entities.Ride", "Ride")
+                        .WithMany("Payments")
+                        .HasForeignKey("RideId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("lake7.Domain.Entities.User", "User")
-                        .WithMany()
+                        .WithMany("Payments")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Delivery");
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Ride");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("lake7.Domain.Entities.Ride", b =>
+                {
+                    b.HasOne("lake7.Domain.Entities.Driver", "Driver")
+                        .WithMany("Rides")
+                        .HasForeignKey("DriverId");
+
+                    b.HasOne("lake7.Domain.Entities.User", "User")
+                        .WithMany("Rides")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -302,6 +472,43 @@ namespace lake7.Infrastructure.Migrations
                     b.Navigation("Driver");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("lake7.Domain.Entities.Delivery", b =>
+                {
+                    b.Navigation("Orders");
+
+                    b.Navigation("Payments");
+                });
+
+            modelBuilder.Entity("lake7.Domain.Entities.Driver", b =>
+                {
+                    b.Navigation("Deliveries");
+
+                    b.Navigation("Rides");
+                });
+
+            modelBuilder.Entity("lake7.Domain.Entities.Order", b =>
+                {
+                    b.Navigation("Payments");
+                });
+
+            modelBuilder.Entity("lake7.Domain.Entities.Ride", b =>
+                {
+                    b.Navigation("Orders");
+
+                    b.Navigation("Payments");
+                });
+
+            modelBuilder.Entity("lake7.Domain.Entities.User", b =>
+                {
+                    b.Navigation("Deliveries");
+
+                    b.Navigation("Orders");
+
+                    b.Navigation("Payments");
+
+                    b.Navigation("Rides");
                 });
 #pragma warning restore 612, 618
         }

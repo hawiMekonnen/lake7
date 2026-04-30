@@ -17,13 +17,15 @@ namespace lake7.Application.Services
             return await _driverLocationRepository.GetByDriverIdAsync(driverId);
         }
 
-        public async Task<DriverLocation> UpdateLocationAsync(Guid driverId, double latitude, double longitude)
+        public async Task<DriverLocation> UpdateLocationAsync(Guid driverId, double latitude, double longitude,string vehicleType,string licensePlate)
         {
             var location = new DriverLocation
             {
                 DriverId = driverId,
                 Latitude = latitude,
                 Longitude = longitude,
+                LicensePlate= licensePlate,
+                VehicleType= vehicleType,
                 LastUpdated = DateTime.UtcNow
             };
 

@@ -19,6 +19,9 @@ namespace lake7.Domain.Entities
 
         public DateTime RegisteredAt { get; set; } = DateTime.UtcNow;
         public DateTime? LastActiveAt { get; set; }
-        
-    }
+
+        public ICollection<Ride> Rides { get; set; } = new List<Ride>();
+        public ICollection<Delivery> Deliveries { get; set; } = new List<Delivery>();
+
+}
 }
