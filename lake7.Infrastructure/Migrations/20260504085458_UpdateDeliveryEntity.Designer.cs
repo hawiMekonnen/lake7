@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using lake7.Infrastructure.Context;
 
@@ -11,9 +12,11 @@ using lake7.Infrastructure.Context;
 namespace lake7.Infrastructure.Migrations
 {
     [DbContext(typeof(Lake7DbContext))]
-    partial class Lake7DbContextModelSnapshot : ModelSnapshot
+    [Migration("20260504085458_UpdateDeliveryEntity")]
+    partial class UpdateDeliveryEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,7 +37,7 @@ namespace lake7.Infrastructure.Migrations
                     b.Property<DateTime?>("DeliveredAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid?>("DriverId")
+                    b.Property<Guid>("DriverId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("DropoffAddress")
@@ -393,7 +396,9 @@ namespace lake7.Infrastructure.Migrations
                 {
                     b.HasOne("lake7.Domain.Entities.Driver", "Driver")
                         .WithMany("Deliveries")
-                        .HasForeignKey("DriverId");
+                        .HasForeignKey("DriverId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("lake7.Domain.Entities.User", "User")
                         .WithMany("Deliveries")

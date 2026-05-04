@@ -36,6 +36,10 @@ builder.Services.AddScoped<IDeliveryService, DeliveryService>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
 builder.Services.AddScoped<IDriverLocationRepository, DriverLocationRepository>();
 builder.Services.AddScoped<IDriverLocationService, DriverLocationService>();
 

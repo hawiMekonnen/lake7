@@ -1,4 +1,4 @@
-﻿using lake7.Domain.Entities;
+using lake7.Domain.Entities;
 using lake7.Domain.Enums;
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ namespace lake7.Application.Interface
     {
         Task<Payment> CreatePaymentAsync(Payment payment);
         Task<List<Payment>> GetAllPaymentsAsync();
-        Task<Payment> ProcessPaymentAsync(Guid userId, Guid? rideId, decimal amount, string method);
+        Task<Payment> ProcessPaymentAsync(Guid userId, Guid orderId, Guid? rideId, decimal amount, string method);
         Task<Payment?> GetPaymentByIdAsync(Guid id);
         Task<Payment?> UpdatePaymentStatusAsync(Guid id, PaymentStatus status);
     }

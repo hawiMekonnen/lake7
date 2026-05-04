@@ -1,4 +1,4 @@
-﻿using lake7.Application.Interface;
+using lake7.Application.Interface;
 using lake7.Domain.Entities;
 using lake7.Domain.Enums;
 using Microsoft.Extensions.Logging;
@@ -15,11 +15,12 @@ public class PaymentService : IPaymentService
     }
 
     // Main payment processing (simulate gateway)
-    public async Task<Payment> ProcessPaymentAsync(Guid userId, Guid? rideId, decimal amount, string method)
+    public async Task<Payment> ProcessPaymentAsync(Guid userId, Guid orderId, Guid? rideId, decimal amount, string method)
     {
         var payment = new Payment
         {
             UserId = userId,
+            OrderId = orderId,
             RideId = rideId,
             Amount = amount,
             Method = method,

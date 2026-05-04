@@ -23,9 +23,7 @@ namespace lake7.Infrastructure.Context
                 .Property(p => p.Amount)
                 .HasColumnType("decimal(18,2)");
 
-            // ==================== CRITICAL FIX FOR CASCADE ERROR ====================
-
-            // 1. Payment to Order - FORCE Restrict (this is the main problematic one)
+          
             modelBuilder.Entity<Payment>()
                 .HasOne(p => p.Order)
                 .WithMany(o => o.Payments)
@@ -33,14 +31,14 @@ namespace lake7.Infrastructure.Context
                 .OnDelete(DeleteBehavior.Restrict)     // This should prevent cascade
                 .IsRequired(true);                     // Make sure it's required
 
-            // 2. Payment to User
+            
             modelBuilder.Entity<Payment>()
                 .HasOne(p => p.User)
                 .WithMany(u => u.Payments)
                 .HasForeignKey(p => p.UserId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            // 3. Optional relationships - No cascade
+            
             modelBuilder.Entity<Payment>()
                 .HasOne(p => p.Ride)
                 .WithMany(r => r.Payments)
@@ -55,7 +53,7 @@ namespace lake7.Infrastructure.Context
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            // 4. Order to Ride & Delivery
+            //cd Order to Ride & Delivery
             modelBuilder.Entity<Order>()
                 .HasOne(o => o.Ride)
                 .WithMany()

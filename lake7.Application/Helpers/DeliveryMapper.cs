@@ -10,8 +10,8 @@ namespace lake7.Application.Helpers
             return new DeliveryDto
             {
                 Id = delivery.Id,
-                PickupLocation = delivery.PickupLocation,
-                DropoffLocation = delivery.DropoffLocation,
+                PickupLocation = delivery.PickupAddress,
+                DropoffLocation = delivery.DropoffAddress,
                 PackageDescription = delivery.PackageDetails,
                 Status = delivery.Status
             };
