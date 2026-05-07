@@ -1,4 +1,5 @@
-﻿using lake7.Application.Interface;
+using lake7.Application.Helpers;
+using lake7.Application.Interface;
 using lake7.Domain.Entities;
 using lake7.Domain.Enums;
 using Microsoft.Extensions.Logging;
@@ -7,21 +8,25 @@ namespace lake7.Application.Services
 {
     public class RideService : IRideService
     {
+        // ... (rest of the class)
         private readonly IRideRepository _rideRepository;
         private readonly IDriverLocationService _driverLocationService;
         private readonly ILogger<RideService> _logger;
         private readonly INotificationService _notificationService;
+        private readonly IPaymentService _paymentService;
 
         public RideService(
             IRideRepository rideRepository,
             IDriverLocationService driverLocationService,
             ILogger<RideService> logger,
-            INotificationService notificationService)
+            INotificationService notificationService,
+            IPaymentService paymentService)
         {
             _rideRepository = rideRepository;
             _driverLocationService = driverLocationService;
             _logger = logger;
             _notificationService = notificationService;
+            _paymentService = paymentService;
         }
 
         public async Task<Ride> RequestRideAsync(Ride ride)
@@ -72,7 +77,16 @@ namespace lake7.Application.Services
             ride.Status = RideStatus.Accepted;
             ride.UpdatedAt = DateTime.UtcNow;
 
-            return await _rideRepository.UpdateAsync(ride);
+            var updatedRide = await _rideRepository.UpdateAsync(ride);
+            
+            // Notify the user that their ride has been accepted
+            if (updatedRide != null)
+            {
+                var rideDto = RideMapper.ToDto(updatedRide);
+                await _notificationService.NotifyUserAsync(updatedRide.UserId, rideDto);
+            }
+
+            return updatedRide;
         }
 
         public async Task<(Ride ride, List<DriverLocation> nearbyDrivers)> RequestRideWithMatchingAsync(Ride ride, double radiusKm)
@@ -114,7 +128,26 @@ namespace lake7.Application.Services
             ride.Status = newStatus;
             ride.UpdatedAt = DateTime.UtcNow;
 
+            if (newStatus == RideStatus.Completed)
+            {
+                ride.CompletedAt = DateTime.UtcNow;
+                // Handle transaction
+                // For simplicity, we use a fixed amount or calculate based on distance.
+                // Assuming amount is handled elsewhere or we use a default for now.
+                decimal amount = 50.0m; // Example amount
+                await _paymentService.ProcessPaymentAsync(ride.UserId, Guid.Empty, ride.Id, amount, "Wallet");
+            }
+
             return await _rideRepository.UpdateAsync(ride);
+        }
+
+        public async Task<List<Ride>> GetNearbyPendingRidesAsync(double latitude, double longitude, double radiusKm)
+        {
+            var pendingRides = await _rideRepository.GetPendingRidesAsync();
+
+            return pendingRides
+                .Where(r => LocationHelper.CalculateDistance(latitude, longitude, r.PickupLatitude, r.PickupLongitude) <= radiusKm)
+                .ToList();
         }
     }
 }

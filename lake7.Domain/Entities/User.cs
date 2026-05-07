@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace lake7.Domain.Entities
@@ -8,6 +8,7 @@ namespace lake7.Domain.Entities
         public required string Name { get; set; }
         public required string Email { get; set; }
         public required string Password { get; set; }
+        public required string PhoneNumber { get; set; }
 
         // Navigation collections
         public ICollection<Ride> Rides { get; set; } = new List<Ride>();

@@ -1,4 +1,4 @@
-﻿using lake7.Application.DTOs;
+using lake7.Application.DTOs;
 using lake7.Application.Helpers;
 using lake7.Application.Interface;
 using lake7.Domain.Entities;
@@ -49,7 +49,8 @@ namespace lake7.WebAPI.Controllers
                 Id = Guid.NewGuid(),
                 Name = dto.FullName,
                 Email = dto.Email,
-                Password = dto.Password   
+                Password = dto.Password,
+                PhoneNumber = dto.PhoneNumber
             };
 
             var newUser = await _userService.CreateUserAsync(user);

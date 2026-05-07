@@ -1,4 +1,4 @@
-﻿using lake7.Domain.Enums;
+using lake7.Domain.Enums;
 
 namespace lake7.Application.DTOs
 {
@@ -11,5 +11,11 @@ namespace lake7.Application.DTOs
         public DateTime RequestedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public Guid? DriverId { get; set; }
+        public string? UserPhoneNumber { get; set; }
+        public string? UserName { get; set; }
+        public double PickupLatitude { get; set; }
+        public double PickupLongitude { get; set; }
+        public double DropoffLatitude { get; set; }
+        public double DropoffLongitude { get; set; }
     }
 }

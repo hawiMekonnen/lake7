@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using lake7.Domain.Entities;
 using lake7.Application.Interface;
 
@@ -47,6 +47,7 @@ namespace lake7.Application.Services
 
             existingUser.Name = user.Name;
             existingUser.Email = user.Email;
+            existingUser.PhoneNumber = user.PhoneNumber;
 
             if (!string.IsNullOrEmpty(user.Password))
             {

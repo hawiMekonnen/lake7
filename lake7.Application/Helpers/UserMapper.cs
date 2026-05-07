@@ -1,4 +1,4 @@
-﻿using lake7.Application.DTOs;
+using lake7.Application.DTOs;
 using lake7.Domain.Entities;
 
 namespace lake7.Application.Helpers
@@ -11,7 +11,8 @@ namespace lake7.Application.Helpers
             {
                 Id = user.Id,
                 Email = user.Email,
-                FullName = user.Name
+                FullName = user.Name,
+                PhoneNumber = user.PhoneNumber
             };
         }
     }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using lake7.Domain.Enums;
 
 namespace lake7.Domain.Entities
@@ -11,10 +11,12 @@ namespace lake7.Domain.Entities
         public string PickupLocation { get; set; } = string.Empty;
         public string DropoffLocation { get; set; } = string.Empty;
         public RideStatus Status { get; set; } = RideStatus.Pending;
+        
         public double PickupLatitude { get; set; }
         public double PickupLongitude { get; set; }
-        public double DropLatitude { get; set; }
-        public double DropLongitude { get; set; }
+        public double DropoffLatitude { get; set; }
+        public double DropoffLongitude { get; set; }
+        
         public DateTime RequestedAt { get; set; } = DateTime.UtcNow;
         public DateTime? CompletedAt { get; set; }
 

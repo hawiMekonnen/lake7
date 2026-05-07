@@ -1,4 +1,4 @@
-﻿using lake7.Domain.Entities;
+using lake7.Domain.Entities;
 using lake7.Domain.Enums;
 
 namespace lake7.Application.Interface
@@ -13,5 +13,6 @@ namespace lake7.Application.Interface
         Task<Ride?> TransitionRideStatusAsync(Guid rideId, RideStatus newStatus);
 
         Task<(Ride ride, List<DriverLocation> nearbyDrivers)> RequestRideWithMatchingAsync(Ride ride, double radiusKm);
+        Task<List<Ride>> GetNearbyPendingRidesAsync(double latitude, double longitude, double radiusKm);
     }
 }

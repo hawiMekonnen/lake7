@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace lake7.Application.DTOs
 {
@@ -12,5 +12,8 @@ namespace lake7.Application.DTOs
 
         [Required, MinLength(8)]
         public string Password { get; set; } = string.Empty;
+        
+        [Required]
+        public string PhoneNumber { get; set; } = string.Empty;
     }
 }

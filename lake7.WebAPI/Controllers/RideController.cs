@@ -1,4 +1,4 @@
-﻿using lake7.Application.DTOs;
+using lake7.Application.DTOs;
 using lake7.Application.Helpers;
 using lake7.Application.Interface;
 using lake7.Domain.Entities;
@@ -38,8 +38,8 @@ namespace lake7.WebAPI.Controllers
                 PickupLatitude = dto.PickupLatitude,
                 PickupLongitude = dto.PickupLongitude,
                 DropoffLocation = dto.DropoffLocation,
-                DropLatitude = dto.DropLatitude,
-                DropLongitude = dto.DropLongitude
+                DropoffLatitude = dto.DropoffLatitude,
+                DropoffLongitude = dto.DropoffLongitude
             };
 
             var (newRide, nearbyDrivers) = await _rideService.RequestRideWithMatchingAsync(ride, 3);
@@ -97,6 +97,14 @@ namespace lake7.WebAPI.Controllers
             if (updatedRide == null) return BadRequest("Invalid transition or ride not found.");
 
             return Ok(RideMapper.ToDto(updatedRide));
+        }
+
+
+        [HttpGet("nearby-pending")]
+        public async Task<IActionResult> GetNearbyPendingRides([FromQuery] double latitude, [FromQuery] double longitude, [FromQuery] double radiusKm = 5)
+        {
+            var rides = await _rideService.GetNearbyPendingRidesAsync(latitude, longitude, radiusKm);
+            return Ok(rides.Select(RideMapper.ToDto));
         }
 
 

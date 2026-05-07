@@ -1,4 +1,4 @@
-﻿using lake7.Domain.Entities;
+using lake7.Domain.Entities;
 
 namespace lake7.Application.Interface
 {
@@ -8,5 +8,6 @@ namespace lake7.Application.Interface
         Task<IEnumerable<Ride>> GetAllAsync();
         Task<Ride?> GetByIdAsync(Guid id);
         Task<Ride?> UpdateAsync(Ride ride);
+        Task<IEnumerable<Ride>> GetPendingRidesAsync();
     }
 }

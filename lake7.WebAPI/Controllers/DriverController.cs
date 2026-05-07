@@ -1,4 +1,4 @@
-﻿using lake7.Application.DTOs;
+using lake7.Application.DTOs;
 using lake7.Application.Helpers;
 using lake7.Application.Interface;
 using lake7.Application.Services;
@@ -44,7 +44,11 @@ namespace lake7.WebAPI.Controllers
                 _config["Jwt:Issuer"]!,
                 _config["Jwt:Audience"]!);
 
-            return Ok(new { token });
+            return Ok(new 
+            { 
+                token, 
+                driverId = driver.Id 
+            });
         }
 
         [HttpGet("getAll")]

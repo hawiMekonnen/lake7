@@ -147,5 +147,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<DriverHub>("/driverHub"); // expose hub endpoint
+app.MapHub<UserHub>("/userHub");
 
 app.Run();

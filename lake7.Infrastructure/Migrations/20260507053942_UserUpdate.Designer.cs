@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using lake7.Infrastructure.Context;
 
@@ -11,9 +12,11 @@ using lake7.Infrastructure.Context;
 namespace lake7.Infrastructure.Migrations
 {
     [DbContext(typeof(Lake7DbContext))]
-    partial class Lake7DbContextModelSnapshot : ModelSnapshot
+    [Migration("20260507053942_UserUpdate")]
+    partial class UserUpdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -318,15 +321,15 @@ namespace lake7.Infrastructure.Migrations
                     b.Property<Guid?>("DriverId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<double>("DropoffLatitude")
+                    b.Property<double>("DropLatitude")
+                        .HasColumnType("float");
+
+                    b.Property<double>("DropLongitude")
                         .HasColumnType("float");
 
                     b.Property<string>("DropoffLocation")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<double>("DropoffLongitude")
-                        .HasColumnType("float");
 
                     b.Property<double>("PickupLatitude")
                         .HasColumnType("float");

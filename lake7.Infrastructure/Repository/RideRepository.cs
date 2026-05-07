@@ -1,4 +1,4 @@
-﻿using lake7.Application.Interface;
+using lake7.Application.Interface;
 using lake7.Domain.Entities;
 using lake7.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
@@ -28,7 +28,10 @@ namespace lake7.Infrastructure.Repository
 
         public async Task<Ride?> GetByIdAsync(Guid id)
         {
-            return await _context.Rides.FindAsync(id);
+            return await _context.Rides
+                .Include(r => r.User)
+                .Include(r => r.Driver)
+                .FirstOrDefaultAsync(r => r.Id == id);
         }
 
         public async Task<Ride?> UpdateAsync(Ride ride)
@@ -36,6 +39,15 @@ namespace lake7.Infrastructure.Repository
             _context.Rides.Update(ride);
             await _context.SaveChangesAsync();
             return ride;
+        }
+
+        public async Task<IEnumerable<Ride>> GetPendingRidesAsync()
+        {
+            var oneHourAgo = DateTime.UtcNow.AddHours(-1);
+            return await _context.Rides
+                .Include(r => r.User)
+                .Where(r => r.Status == lake7.Domain.Enums.RideStatus.Pending && r.RequestedAt >= oneHourAgo)
+                .ToListAsync();
         }
     }
 }

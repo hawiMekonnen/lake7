@@ -5,6 +5,6 @@
     public double PickupLongitude { get; set; }
 
     public string DropoffLocation { get; set; } = string.Empty;
-    public double DropLatitude { get; set; }
-    public double DropLongitude { get; set; }
+    public double DropoffLatitude { get; set; }
+    public double DropoffLongitude { get; set; }
 }
