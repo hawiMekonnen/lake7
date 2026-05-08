@@ -1,4 +1,4 @@
-﻿using lake7.Domain.Entities;
+using lake7.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace lake7.Infrastructure.Context
@@ -78,6 +78,18 @@ namespace lake7.Infrastructure.Context
                 .HasMany(d => d.Payments)
                 .WithOne(p => p.Delivery)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            // Seed Admin
+            modelBuilder.Entity<AdminAccount>().HasData(new AdminAccount {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                FullName = "System Admin",
+                Email = "admin@lake7.com",
+                Password = "admin123", // this would be hashed
+                Role = "SuperAdmin",
+                CreatedAt = new DateTime(2024, 5, 8),
+                UpdatedAt = new DateTime(2024, 5, 8),
+                LastLogin = new DateTime(2024, 5, 8)
+            });
         }
 
 
@@ -88,5 +100,6 @@ namespace lake7.Infrastructure.Context
         public DbSet<Payment> Payments { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<DriverLocation> DriverLocations { get; set; }
+        public DbSet<AdminAccount> AdminAccounts { get; set; }
     }
 }

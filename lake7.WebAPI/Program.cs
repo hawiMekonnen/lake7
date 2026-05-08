@@ -45,6 +45,9 @@ builder.Services.AddScoped<IDriverLocationService, DriverLocationService>();
 
 builder.Services.AddScoped<IMapService, MapService>();
 
+builder.Services.AddScoped<IAdminRepository, AdminRepository>();
+builder.Services.AddScoped<IAdminService, AdminService>();
+
 builder.Services.AddScoped<INotificationService, NotificationService>();
 
 

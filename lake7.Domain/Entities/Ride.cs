@@ -10,6 +10,7 @@ namespace lake7.Domain.Entities
 
         public string PickupLocation { get; set; } = string.Empty;
         public string DropoffLocation { get; set; } = string.Empty;
+        public double Fare { get; set; }
         public RideStatus Status { get; set; } = RideStatus.Pending;
         
         public double PickupLatitude { get; set; }

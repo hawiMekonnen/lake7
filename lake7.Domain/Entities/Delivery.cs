@@ -11,6 +11,7 @@ namespace lake7.Domain.Entities
         public string PickupAddress { get; set; } = string.Empty;
         public string DropoffAddress { get; set; } = string.Empty;
         public string PackageDetails { get; set; } = string.Empty;
+        public double Fare { get; set; }
         public RideStatus Status { get; set; } = RideStatus.Pending;
         public DateTime RequestedAt { get; set; } = DateTime.UtcNow;
         public DateTime? DeliveredAt { get; set; }
