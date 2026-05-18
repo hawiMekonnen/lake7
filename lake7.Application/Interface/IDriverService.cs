@@ -1,4 +1,4 @@
-﻿using lake7.Domain.Entities;
+using lake7.Domain.Entities;
 
 namespace lake7.Application.Interface
 {
@@ -11,5 +11,7 @@ namespace lake7.Application.Interface
         Task<Driver?> SetApprovalStatusAsync(Guid id, bool isApproved);
         Task<Driver?> UpdateDriverAsync(Driver driver, Guid id);
         Task<bool> SetAvailabilityAsync(Guid id, bool isAvailable);
+        Task<List<Driver>> GetAvailableDriversAsync();
     }
 }
+

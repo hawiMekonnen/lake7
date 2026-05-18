@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -13,6 +13,8 @@ namespace lake7.Application.Interface
         Task<Driver?> GetByEmailAsync(string email);
         Task<Driver?> GetByIdAsync(Guid id);
         Task<Driver?> UpdateAsync(Driver driver);
+        Task<IEnumerable<Driver>> GetAvailableDriversAsync();
     }
 }
+
 

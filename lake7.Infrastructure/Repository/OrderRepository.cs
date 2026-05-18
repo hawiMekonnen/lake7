@@ -1,4 +1,5 @@
-﻿using lake7.Domain.Entities;
+using lake7.Domain.Entities;
+using lake7.Domain.Enums;
 using lake7.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 
@@ -33,4 +34,24 @@ public class OrderRepository : IOrderRepository
         await _context.SaveChangesAsync();
         return order;
     }
+
+    public async Task<List<Order>> GetAllAsync()
+    {
+        return await _context.Orders
+            .Include(o => o.User)
+            .Include(o => o.Ride)
+            .Include(o => o.Delivery)
+            .ToListAsync();
+    }
+
+    public async Task<List<Order>> GetByStatusAsync(OrderStatus status)
+    {
+        return await _context.Orders
+            .Include(o => o.User)
+            .Include(o => o.Ride)
+            .Include(o => o.Delivery)
+            .Where(o => o.Status == status)
+            .ToListAsync();
+    }
 }
+

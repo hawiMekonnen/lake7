@@ -1,4 +1,4 @@
-﻿using lake7.Application.Interface;
+using lake7.Application.Interface;
 using lake7.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using System;
@@ -63,6 +63,11 @@ namespace lake7.Application.Services
 
             existingDriver.Name = driver.Name;
             existingDriver.Email = driver.Email;
+            existingDriver.PhoneNumber = driver.PhoneNumber;
+            existingDriver.VehicleInfo = driver.VehicleInfo;
+            existingDriver.LicensePlate = driver.LicensePlate;
+            existingDriver.VehicleType = driver.VehicleType;
+            existingDriver.IsAvailable = driver.IsAvailable;
             existingDriver.UpdatedAt = DateTime.UtcNow;
 
             return await _driverRepository.UpdateAsync(existingDriver);
@@ -87,5 +92,11 @@ namespace lake7.Application.Services
             return await _driverRepository.UpdateAsync(driver);
         }
 
+        public async Task<List<Driver>> GetAvailableDriversAsync()
+        {
+            var drivers = await _driverRepository.GetAvailableDriversAsync();
+            return drivers.ToList();
+        }
     }
 }
+

@@ -2,6 +2,7 @@ using lake7.Application.DTOs;
 using lake7.Application.Interface;
 using lake7.Domain.Entities;
 using lake7.Domain.Enums;
+using Microsoft.Extensions.Logging;
 
 namespace lake7.Application.Services
 {
@@ -11,18 +12,23 @@ namespace lake7.Application.Services
         private readonly IDeliveryRepository _deliveryRepository;
         private readonly IOrderRepository _orderRepository;
         private readonly IPaymentService _paymentService;
+        private readonly INotificationService _notificationService;
 
         public OrderService(
             IUnitOfWork unitOfWork,
             IDeliveryRepository deliveryRepository,
             IOrderRepository orderRepository,
-            IPaymentService paymentService)
+            IPaymentService paymentService,
+            INotificationService notificationService)
         {
             _unitOfWork = unitOfWork;
             _deliveryRepository = deliveryRepository;
             _orderRepository = orderRepository;
             _paymentService = paymentService;
+            _notificationService = notificationService;
         }
+
+
 
         public async Task<Order> PlaceDeliveryOrderAsync(Guid userId, PlaceDeliveryOrderDto dto)
         {
@@ -96,6 +102,9 @@ namespace lake7.Application.Services
                 // 6. Commit Transaction
                 await _unitOfWork.CommitTransactionAsync();
 
+                // Notify Restaurant
+                await _notificationService.NotifyOrderCreatedAsync(newOrder);
+
                 return newOrder;
             }
             catch (Exception)
@@ -113,9 +122,70 @@ namespace lake7.Application.Services
 
         public async Task<List<Order>> GetAllOrdersAsync()
         {
-            // Note: Ideally IOrderRepository should have GetAllAsync
-            // For now return empty or implement if needed
-            return new List<Order>();
+            return await _orderRepository.GetAllAsync();
+        }
+
+        public async Task<Order?> AssignDriverAsync(Guid orderId, Guid driverId)
+        {
+            var order = await _orderRepository.GetByIdAsync(orderId);
+            if (order == null) return null;
+
+            if (order.DeliveryId.HasValue)
+            {
+                var delivery = await _deliveryRepository.GetByIdAsync(order.DeliveryId.Value);
+                if (delivery != null)
+                {
+                    delivery.DriverId = driverId;
+                    delivery.Status = RideStatus.Accepted;
+                    await _deliveryRepository.UpdateAsync(delivery);
+                }
+            }
+
+            order.Status = OrderStatus.OutForDelivery;
+            await _orderRepository.UpdateAsync(order);
+
+            // Notify Driver
+            await _notificationService.NotifyOrderAssignedAsync(driverId, order);
+            
+            // Notify User
+            await _notificationService.NotifyOrderStatusChangedAsync(order.UserId, order.Status.ToString());
+
+            return order;
+        }
+
+        public async Task<Order?> UpdateOrderStatusAsync(Guid orderId, OrderStatus status)
+        {
+            var order = await _orderRepository.GetByIdAsync(orderId);
+            if (order == null) return null;
+
+            order.Status = status;
+            
+            // Sync with delivery status if applicable
+            if (order.DeliveryId.HasValue)
+            {
+                var delivery = await _deliveryRepository.GetByIdAsync(order.DeliveryId.Value);
+                if (delivery != null)
+                {
+                    if (status == OrderStatus.OutForDelivery) delivery.Status = RideStatus.Accepted;
+                    else if (status == OrderStatus.Delivered) delivery.Status = RideStatus.Completed;
+                    else if (status == OrderStatus.Cancelled) delivery.Status = RideStatus.Cancelled;
+                    
+                    await _deliveryRepository.UpdateAsync(delivery);
+                }
+            }
+
+            await _orderRepository.UpdateAsync(order);
+            
+            // Notify User
+            await _notificationService.NotifyOrderStatusChangedAsync(order.UserId, order.Status.ToString());
+
+            return order;
+        }
+
+        public async Task<List<Order>> GetOrdersByStatusAsync(OrderStatus status)
+        {
+            return await _orderRepository.GetByStatusAsync(status);
         }
     }
 }
+

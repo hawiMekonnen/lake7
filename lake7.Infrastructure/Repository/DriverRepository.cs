@@ -1,4 +1,4 @@
-﻿using lake7.Application.Interface;
+using lake7.Application.Interface;
 using lake7.Domain.Entities;
 using lake7.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
@@ -35,11 +35,18 @@ namespace lake7.Infrastructure.Repository
             return await _context.Drivers.FirstOrDefaultAsync(d => d.Email == email);
         }
         public async Task<Driver?> UpdateAsync(Driver driver)
-
         {
             _context.Drivers.Update(driver);
             await _context.SaveChangesAsync();
             return driver;
         }
+
+        public async Task<IEnumerable<Driver>> GetAvailableDriversAsync()
+        {
+            return await _context.Drivers
+                .Where(d => d.IsAvailable && d.IsApproved)
+                .ToListAsync();
+        }
     }
 }
+

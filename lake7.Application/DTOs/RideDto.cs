@@ -17,5 +17,9 @@ namespace lake7.Application.DTOs
         public double PickupLongitude { get; set; }
         public double DropoffLatitude { get; set; }
         public double DropoffLongitude { get; set; }
+        public string VehicleType { get; set; } = "Economy";
+        public string? DriverName { get; set; }
+        public string? DriverPhoneNumber { get; set; }
+        public string? DriverProfilePicture { get; set; }
     }
 }

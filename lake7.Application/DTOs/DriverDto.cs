@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace lake7.Application.DTOs
 {
@@ -11,6 +11,7 @@ namespace lake7.Application.DTOs
         public required string VehicleType { get; set; }
         public required string Email { get; set; }
         public required string PhoneNumber { get; set; }
+        public string? ProfilePicture { get; set; }
         public bool IsAvailable { get; set; }
         public double Rating { get; set; }
         public int CompletedRides { get; set; }

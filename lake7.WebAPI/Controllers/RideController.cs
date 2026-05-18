@@ -15,11 +15,13 @@ namespace lake7.WebAPI.Controllers
     {
         private readonly IRideService _rideService;
         private readonly IMapService _mapService;
+        private readonly IDriverService _driverService;
 
-        public RideController(IRideService rideService, IMapService mapService)
+        public RideController(IRideService rideService, IMapService mapService, IDriverService driverService)
         {
             _rideService = rideService;
             _mapService = mapService;
+            _driverService = driverService;
         }
 
         [Authorize]
@@ -37,7 +39,7 @@ namespace lake7.WebAPI.Controllers
                 PickupLocation = dto.PickupLocation,
                 PickupLatitude = dto.PickupLatitude,
                 PickupLongitude = dto.PickupLongitude,
-                DropoffLocation = dto.DropoffLocation,
+                DropoffLocation = dto.DropoffLocation + "|" + dto.VehicleType,
                 DropoffLatitude = dto.DropoffLatitude,
                 DropoffLongitude = dto.DropoffLongitude
             };
@@ -100,11 +102,28 @@ namespace lake7.WebAPI.Controllers
         }
 
 
+        [Authorize]
         [HttpGet("nearby-pending")]
         public async Task<IActionResult> GetNearbyPendingRides([FromQuery] double latitude, [FromQuery] double longitude, [FromQuery] double radiusKm = 5)
         {
+            var driverIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (driverIdClaim == null) return Unauthorized("Invalid token");
+
+            var driverId = Guid.Parse(driverIdClaim);
+            var driver = await _driverService.GetDriverByIdAsync(driverId);
+            if (driver == null) return NotFound("Driver not found.");
+
             var rides = await _rideService.GetNearbyPendingRidesAsync(latitude, longitude, radiusKm);
-            return Ok(rides.Select(RideMapper.ToDto));
+            
+            // Filter by matching vehicle type!
+            var matchedRides = rides.Where(r => 
+            {
+                var dropoffParts = (r.DropoffLocation ?? string.Empty).Split('|');
+                var vehicleType = dropoffParts.Length > 1 ? dropoffParts[1] : "Economy";
+                return string.Equals(vehicleType, driver.VehicleType, StringComparison.OrdinalIgnoreCase);
+            });
+
+            return Ok(matchedRides.Select(RideMapper.ToDto));
         }
 
 

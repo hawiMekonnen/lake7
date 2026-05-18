@@ -47,7 +47,8 @@ namespace lake7.WebAPI.Controllers
             return Ok(new 
             { 
                 token, 
-                driverId = driver.Id 
+                driverId = driver.Id,
+                vehicleType = driver.VehicleType
             });
         }
 
@@ -100,5 +101,12 @@ namespace lake7.WebAPI.Controllers
             return Ok(drivers);
         }
 
+        [HttpGet("available")]
+        public async Task<IActionResult> GetAvailableDrivers()
+        {
+            var drivers = await _driverService.GetAvailableDriversAsync();
+            return Ok(drivers.Select(d => DriverMapper.ToDto(d)));
+        }
     }
 }
+

@@ -30,5 +30,21 @@ namespace lake7.WebAPI.Services
         {
             await _userHubContext.Clients.Group(userId.ToString()).SendAsync("RideAccepted", data);
         }
+
+        public async Task NotifyOrderCreatedAsync(object orderData)
+        {
+            await _userHubContext.Clients.All.SendAsync("OrderCreated", orderData);
+        }
+
+        public async Task NotifyOrderAssignedAsync(Guid driverId, object orderData)
+        {
+            await _hubContext.Clients.Group(driverId.ToString()).SendAsync("OrderAssigned", orderData);
+        }
+
+        public async Task NotifyOrderStatusChangedAsync(Guid userId, string status)
+        {
+            await _userHubContext.Clients.Group(userId.ToString()).SendAsync("OrderStatusChanged", status);
+        }
     }
 }
+

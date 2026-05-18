@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using System.Threading.Tasks;
 
@@ -25,6 +25,16 @@ namespace lake7.WebAPI.Hubs
         public async Task SendRideRequest(string driverId, object rideData)
         {
             await Clients.Group(driverId).SendAsync("RideRequested", rideData);
+        }
+
+        public async Task NotifyOrderAssigned(string driverId, object order)
+        {
+            await Clients.Group(driverId).SendAsync("OrderAssigned", order);
+        }
+
+        public async Task NotifyDriverLocation(string driverId, double lat, double lng)
+        {
+            await Clients.All.SendAsync("DriverLocationUpdated", new { driverId, lat, lng });
         }
 
         //handle disconnect

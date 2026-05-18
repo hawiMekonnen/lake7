@@ -22,6 +22,10 @@ namespace lake7.Infrastructure.Context
             modelBuilder.Entity<Payment>()
                 .Property(p => p.Amount)
                 .HasColumnType("decimal(18,2)");
+            
+            modelBuilder.Entity<MenuItem>()
+                .Property(m => m.Price)
+                .HasColumnType("decimal(18,2)");
 
           
             modelBuilder.Entity<Payment>()
@@ -101,5 +105,7 @@ namespace lake7.Infrastructure.Context
         public DbSet<Order> Orders { get; set; }
         public DbSet<DriverLocation> DriverLocations { get; set; }
         public DbSet<AdminAccount> AdminAccounts { get; set; }
+        public DbSet<Restaurant> Restaurants { get; set; }
+        public DbSet<MenuItem> MenuItems { get; set; }
     }
 }

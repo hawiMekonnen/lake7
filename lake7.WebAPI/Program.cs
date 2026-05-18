@@ -48,6 +48,10 @@ builder.Services.AddScoped<IMapService, MapService>();
 builder.Services.AddScoped<IAdminRepository, AdminRepository>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 
+builder.Services.AddScoped<IRestaurantRepository, RestaurantRepository>();
+builder.Services.AddScoped<IMenuItemRepository, MenuItemRepository>();
+builder.Services.AddScoped<IRestaurantService, RestaurantService>();
+
 builder.Services.AddScoped<INotificationService, NotificationService>();
 
 
