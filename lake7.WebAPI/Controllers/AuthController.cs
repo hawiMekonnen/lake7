@@ -30,6 +30,7 @@ namespace lake7.WebAPI.Controllers
             var token = JwtHelper.GenerateToken(
                 user.Id,
                 user.Email,
+                user.Name,
                 _config["Jwt:Key"]!,
                 _config["Jwt:Issuer"]!,
                 _config["Jwt:Audience"]!);
@@ -43,7 +44,6 @@ namespace lake7.WebAPI.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            
             var user = new User
             {
                 Id = Guid.NewGuid(),
@@ -55,7 +55,15 @@ namespace lake7.WebAPI.Controllers
 
             var newUser = await _userService.CreateUserAsync(user);
 
-            return Ok(UserMapper.ToDto(newUser));
+            var token = JwtHelper.GenerateToken(
+                newUser.Id,
+                newUser.Email,
+                newUser.Name,
+                _config["Jwt:Key"]!,
+                _config["Jwt:Issuer"]!,
+                _config["Jwt:Audience"]!);
+
+            return Ok(new { token, user = UserMapper.ToDto(newUser) });
         }
     }
 }

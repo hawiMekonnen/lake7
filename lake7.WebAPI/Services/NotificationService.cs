@@ -45,6 +45,11 @@ namespace lake7.WebAPI.Services
         {
             await _userHubContext.Clients.Group(userId.ToString()).SendAsync("OrderStatusChanged", status);
         }
+
+        public async Task NotifyOrderPreparedAsync(object orderData)
+        {
+            await _hubContext.Clients.All.SendAsync("OrderPrepared", orderData);
+        }
     }
 }
 

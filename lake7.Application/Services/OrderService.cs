@@ -87,8 +87,8 @@ namespace lake7.Application.Services
 
                 if (payment.Status == PaymentStatus.Completed)
                 {
-                    newOrder.Status = OrderStatus.Completed;
-                    newDelivery.Status = RideStatus.Accepted; 
+                    newOrder.Status = OrderStatus.Confirmed;
+                    newDelivery.Status = RideStatus.Pending; 
                 }
                 else
                 {
@@ -136,12 +136,12 @@ namespace lake7.Application.Services
                 if (delivery != null)
                 {
                     delivery.DriverId = driverId;
-                    delivery.Status = RideStatus.Accepted;
+                    delivery.Status = RideStatus.Pending;
                     await _deliveryRepository.UpdateAsync(delivery);
                 }
             }
 
-            order.Status = OrderStatus.OutForDelivery;
+            order.Status = OrderStatus.Prepared;
             await _orderRepository.UpdateAsync(order);
 
             // Notify Driver
@@ -179,12 +179,27 @@ namespace lake7.Application.Services
             // Notify User
             await _notificationService.NotifyOrderStatusChangedAsync(order.UserId, order.Status.ToString());
 
+            // Notify Drivers if Order is Prepared
+            if (status == OrderStatus.Prepared)
+            {
+                await _notificationService.NotifyOrderPreparedAsync(order);
+            }
+
             return order;
         }
 
         public async Task<List<Order>> GetOrdersByStatusAsync(OrderStatus status)
         {
             return await _orderRepository.GetByStatusAsync(status);
+        }
+
+        public async Task<Order?> GetActiveOrderByDriverIdAsync(Guid driverId)
+        {
+            var orders = await _orderRepository.GetAllAsync();
+            return orders.FirstOrDefault(o => o.Delivery?.DriverId == driverId && 
+                                              o.Status != OrderStatus.Completed && 
+                                              o.Status != OrderStatus.Cancelled &&
+                                              o.Status != OrderStatus.Delivered);
         }
     }
 }

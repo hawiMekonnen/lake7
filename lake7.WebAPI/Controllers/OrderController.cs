@@ -86,6 +86,14 @@ namespace lake7.WebAPI.Controllers
             if (order == null) return NotFound("Order not found");
             return Ok(order);
         }
+
+        [HttpGet("driver/{driverId}/active")]
+        public async Task<IActionResult> GetActiveOrderByDriverId(Guid driverId)
+        {
+            var order = await _orderService.GetActiveOrderByDriverIdAsync(driverId);
+            if (order == null) return NotFound("No active order found for this driver");
+            return Ok(order);
+        }
     }
 }
 

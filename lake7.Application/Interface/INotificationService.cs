@@ -14,6 +14,7 @@ namespace lake7.Application.Interface
         Task NotifyOrderCreatedAsync(object orderData);
         Task NotifyOrderAssignedAsync(Guid driverId, object orderData);
         Task NotifyOrderStatusChangedAsync(Guid userId, string status);
+        Task NotifyOrderPreparedAsync(object orderData);
     }
 }
 

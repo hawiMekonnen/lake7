@@ -12,6 +12,7 @@ namespace lake7.Application.Interface
         Task<Order?> AssignDriverAsync(Guid orderId, Guid driverId);
         Task<Order?> UpdateOrderStatusAsync(Guid orderId, OrderStatus status);
         Task<List<Order>> GetOrdersByStatusAsync(OrderStatus status);
+        Task<Order?> GetActiveOrderByDriverIdAsync(Guid driverId);
     }
 }
 

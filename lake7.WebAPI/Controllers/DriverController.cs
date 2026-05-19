@@ -40,6 +40,7 @@ namespace lake7.WebAPI.Controllers
             var token = JwtHelper.GenerateToken(
                 driver.Id,
                 driver.Email,
+                driver.Name,
                 _config["Jwt:Key"]!,
                 _config["Jwt:Issuer"]!,
                 _config["Jwt:Audience"]!);
