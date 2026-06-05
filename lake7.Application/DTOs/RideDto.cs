@@ -21,5 +21,7 @@ namespace lake7.Application.DTOs
         public string? DriverName { get; set; }
         public string? DriverPhoneNumber { get; set; }
         public string? DriverProfilePicture { get; set; }
+        public string? DriverVehicleInfo { get; set; }
+        public string? DriverLicensePlate { get; set; }
     }
 }

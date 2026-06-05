@@ -93,9 +93,9 @@ namespace lake7.WebAPI.Controllers
         }
 
         [HttpPatch("{rideId}/transition")]
-        public async Task<IActionResult> TransitionRide(Guid rideId, [FromQuery] RideStatus newStatus)
+        public async Task<IActionResult> TransitionRide(Guid rideId, [FromQuery] RideStatus newStatus, [FromQuery] decimal? finalFare = null)
         {
-            var updatedRide = await _rideService.TransitionRideStatusAsync(rideId, newStatus);
+            var updatedRide = await _rideService.TransitionRideStatusAsync(rideId, newStatus, finalFare);
             if (updatedRide == null) return BadRequest("Invalid transition or ride not found.");
 
             return Ok(RideMapper.ToDto(updatedRide));
@@ -126,6 +126,26 @@ namespace lake7.WebAPI.Controllers
             return Ok(matchedRides.Select(RideMapper.ToDto));
         }
 
+        [Authorize]
+        [HttpGet("user")]
+        public async Task<IActionResult> GetUserRides()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null) return Unauthorized("Invalid token");
+
+            if (!Guid.TryParse(userIdClaim, out Guid userId))
+            {
+                return BadRequest("Invalid User ID");
+            }
+
+            var rides = await _rideService.GetAllRidesAsync();
+            var userRides = rides
+                .Where(r => r.UserId == userId)
+                .OrderByDescending(r => r.RequestedAt)
+                .ToList();
+
+            return Ok(userRides.Select(RideMapper.ToDto));
+        }
 
     }
 }

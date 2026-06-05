@@ -97,6 +97,12 @@ namespace lake7.Application.Services
             var drivers = await _driverRepository.GetAvailableDriversAsync();
             return drivers.ToList();
         }
+
+        // Delete driver
+        public async Task<bool> DeleteDriverAsync(Guid id)
+        {
+            return await _driverRepository.DeleteAsync(id);
+        }
     }
 }
 

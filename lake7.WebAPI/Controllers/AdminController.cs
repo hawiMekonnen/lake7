@@ -110,13 +110,14 @@ namespace lake7.WebAPI.Controllers
             return Ok(new { success = true, message = "Driver approved" });
         }
 
-        [HttpPost("drivers/suspend")]
-        public async Task<IActionResult> SuspendDriver([FromBody] IdRequest request)
+        [HttpDelete("drivers/delete/{id}")]
+        public async Task<IActionResult> DeleteDriver(Guid id)
         {
-            var driver = await _driverService.SetApprovalStatusAsync(request.Id, false);
-            if (driver == null) return NotFound();
-            return Ok(new { success = true, message = "Driver suspended" });
+            var success = await _driverService.DeleteDriverAsync(id);
+            if (!success) return NotFound();
+            return Ok(new { success = true, message = "Driver deleted" });
         }
+
 
         [HttpGet("stats")]
         public async Task<IActionResult> GetDashboardStats()

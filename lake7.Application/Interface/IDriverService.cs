@@ -4,6 +4,7 @@ namespace lake7.Application.Interface
 {
     public interface IDriverService
     {
+        Task<bool> DeleteDriverAsync(Guid id);
         Task<Driver> RegisterDriverAsync(Driver driver);
         Task<List<Driver>> GetDriversAsync();
         Task<Driver?> ValidateDriverAsync(string email, string password);

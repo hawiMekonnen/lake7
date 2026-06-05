@@ -37,6 +37,9 @@ namespace lake7.WebAPI.Controllers
             if (driver == null)
                 return Unauthorized("Invalid email or password");
 
+            if (!driver.IsApproved)
+                return StatusCode(403, "Your account is pending approval. Please wait for admin verification.");
+
             var token = JwtHelper.GenerateToken(
                 driver.Id,
                 driver.Email,

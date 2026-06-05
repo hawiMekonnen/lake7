@@ -4,9 +4,9 @@ namespace lake7.WebAPI.Hubs
 {
     public class UserHub : Hub
     {
-        public async Task RegisterUser(Guid userId)
+        public async Task RegisterUser(string userId)
         {
-            await Groups.AddToGroupAsync(Context.ConnectionId, userId.ToString());
+            await Groups.AddToGroupAsync(Context.ConnectionId, userId);
         }
 
         public async Task NotifyOrderCreated(object order)

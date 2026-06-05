@@ -10,6 +10,7 @@ namespace lake7.Application.Services
     {
         // ... (rest of the class)
         private readonly IRideRepository _rideRepository;
+        private readonly IDriverRepository _driverRepository;
         private readonly IDriverLocationService _driverLocationService;
         private readonly ILogger<RideService> _logger;
         private readonly INotificationService _notificationService;
@@ -17,12 +18,14 @@ namespace lake7.Application.Services
 
         public RideService(
             IRideRepository rideRepository,
+            IDriverRepository driverRepository,
             IDriverLocationService driverLocationService,
             ILogger<RideService> logger,
             INotificationService notificationService,
             IPaymentService paymentService)
         {
             _rideRepository = rideRepository;
+            _driverRepository = driverRepository;
             _driverLocationService = driverLocationService;
             _logger = logger;
             _notificationService = notificationService;
@@ -36,7 +39,7 @@ namespace lake7.Application.Services
             var savedRide = await _rideRepository.AddAsync(ride);
 
             // Notify all drivers in real time
-            await _notificationService.NotifyAllDriversAsync(savedRide);
+            await _notificationService.NotifyAllDriversAsync(RideMapper.ToDto(savedRide));
 
             return savedRide;
         }
@@ -79,11 +82,24 @@ namespace lake7.Application.Services
 
             var updatedRide = await _rideRepository.UpdateAsync(ride);
             
-            // Notify the user that their ride has been accepted
+            // Explicitly load the driver so the navigation property isn't null for the SignalR message
             if (updatedRide != null)
             {
-                var rideDto = RideMapper.ToDto(updatedRide);
-                await _notificationService.NotifyUserAsync(updatedRide.UserId, rideDto);
+                // We fetch the full updated ride again to ensure navigation properties are populated
+                var fullyLoadedRide = await _rideRepository.GetByIdAsync(updatedRide.Id);
+                
+                if (fullyLoadedRide != null)
+                {
+                    // Manually populate the Driver property if EF Core caching missed it
+                    if (fullyLoadedRide.Driver == null)
+                    {
+                        fullyLoadedRide.Driver = await _driverRepository.GetByIdAsync(driverId);
+                    }
+
+                    var rideDto = RideMapper.ToDto(fullyLoadedRide);
+                    await _notificationService.NotifyUserAsync(fullyLoadedRide.UserId, rideDto);
+                    return fullyLoadedRide;
+                }
             }
 
             return updatedRide;
@@ -98,16 +114,17 @@ namespace lake7.Application.Services
             var nearbyDrivers = await _driverLocationService.GetNearbyDriversAsync(
                 ride.PickupLatitude, ride.PickupLongitude, radiusKm);
 
+            var rideDto = RideMapper.ToDto(savedRide);
             foreach (var driver in nearbyDrivers)
             {
-                await _notificationService.NotifyDriverAsync(driver.DriverId, savedRide);
+                await _notificationService.NotifyDriverAsync(driver.DriverId, rideDto);
                 _logger.LogInformation($"Notified driver {driver.DriverId} for ride {ride.Id}");
             }
 
             return (savedRide, nearbyDrivers);
         }
 
-        public async Task<Ride?> TransitionRideStatusAsync(Guid rideId, RideStatus newStatus)
+        public async Task<Ride?> TransitionRideStatusAsync(Guid rideId, RideStatus newStatus, decimal? finalFare = null)
         {
             var ride = await _rideRepository.GetByIdAsync(rideId);
             if (ride == null) return null;
@@ -132,10 +149,24 @@ namespace lake7.Application.Services
             {
                 ride.CompletedAt = DateTime.UtcNow;
                 // Handle transaction
-                // For simplicity, we use a fixed amount or calculate based on distance.
-                // Assuming amount is handled elsewhere or we use a default for now.
-                decimal amount = 50.0m; // Example amount
-                await _paymentService.ProcessPaymentAsync(ride.UserId, Guid.Empty, ride.Id, amount, "Wallet");
+                decimal amount = finalFare ?? 50.0m;
+                try 
+                {
+                    await _paymentService.ProcessPaymentAsync(ride.UserId, null, ride.Id, amount, "Wallet");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Could not save payment record");
+                }
+                
+                // Notify User of final price
+                await _notificationService.NotifyUserRideCompletedAsync(ride.UserId, new
+                {
+                    Type = "RideCompleted",
+                    Message = $"Your ride has been completed. Final fare: ETB {amount:F2}",
+                    RideId = ride.Id,
+                    FinalFare = amount
+                });
             }
 
             return await _rideRepository.UpdateAsync(ride);

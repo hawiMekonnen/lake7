@@ -7,8 +7,9 @@ namespace lake7.Application.Interface
     {
         
         Task NotifyAllDriversAsync(object rideData);
-        Task NotifyDriverAsync(Guid driverId, Ride savedRide);
+        Task NotifyDriverAsync(Guid driverId, object savedRide);
         Task NotifyUserAsync(Guid userId, object data);
+        Task NotifyUserRideCompletedAsync(Guid userId, object data);
 
         // Order Notifications
         Task NotifyOrderCreatedAsync(object orderData);

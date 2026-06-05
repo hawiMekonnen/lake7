@@ -16,7 +16,7 @@ namespace lake7.WebAPI.Services
             _userHubContext = userHubContext;
         }
 
-        public async Task NotifyDriverAsync(Guid driverId, Ride savedRide)
+        public async Task NotifyDriverAsync(Guid driverId, object savedRide)
         {
             await _hubContext.Clients.Group(driverId.ToString()).SendAsync("RideRequested", savedRide);
         }
@@ -29,6 +29,11 @@ namespace lake7.WebAPI.Services
         public async Task NotifyUserAsync(Guid userId, object data)
         {
             await _userHubContext.Clients.Group(userId.ToString()).SendAsync("RideAccepted", data);
+        }
+
+        public async Task NotifyUserRideCompletedAsync(Guid userId, object data)
+        {
+            await _userHubContext.Clients.Group(userId.ToString()).SendAsync("RideCompleted", data);
         }
 
         public async Task NotifyOrderCreatedAsync(object orderData)
@@ -52,4 +57,3 @@ namespace lake7.WebAPI.Services
         }
     }
 }
-

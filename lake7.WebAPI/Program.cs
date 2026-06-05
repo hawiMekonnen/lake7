@@ -91,7 +91,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
             ClockSkew = TimeSpan.Zero // remove delay tolerance
         };
-
         options.Events = new JwtBearerEvents
         {
             OnMessageReceived = context =>
@@ -101,6 +100,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
                 Console.WriteLine("🔑 RAW HEADER: " + context.Request.Headers["Authorization"]);
                 Console.WriteLine("🔑 EXTRACTED TOKEN: " + token);
+
+                if (string.IsNullOrEmpty(token))
+                {
+                    token = context.Request.Query["access_token"];
+                    Console.WriteLine("🔑 QUERY STRING TOKEN: " + token);
+                }
 
                 if (!string.IsNullOrEmpty(token))
                 {

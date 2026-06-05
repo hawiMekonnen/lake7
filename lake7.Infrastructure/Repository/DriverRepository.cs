@@ -47,6 +47,15 @@ namespace lake7.Infrastructure.Repository
                 .Where(d => d.IsAvailable && d.IsApproved)
                 .ToListAsync();
         }
+
+        // New delete method
+        public async Task<bool> DeleteAsync(Guid id)
+        {
+            var entity = await _context.Drivers.FindAsync(id);
+            if (entity == null) return false;
+            _context.Drivers.Remove(entity);
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }
-

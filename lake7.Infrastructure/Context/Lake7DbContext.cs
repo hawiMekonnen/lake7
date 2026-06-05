@@ -33,7 +33,7 @@ namespace lake7.Infrastructure.Context
                 .WithMany(o => o.Payments)
                 .HasForeignKey(p => p.OrderId)
                 .OnDelete(DeleteBehavior.Restrict)     // This should prevent cascade
-                .IsRequired(true);                     // Make sure it's required
+                .IsRequired(false);                     // Optional relation
 
             
             modelBuilder.Entity<Payment>()

@@ -13,19 +13,25 @@ namespace lake7.Application.Services
         private readonly IOrderRepository _orderRepository;
         private readonly IPaymentService _paymentService;
         private readonly INotificationService _notificationService;
+        private readonly IDriverLocationRepository _driverLocationRepository;
+        private readonly IDriverRepository _driverRepository;
 
         public OrderService(
             IUnitOfWork unitOfWork,
             IDeliveryRepository deliveryRepository,
             IOrderRepository orderRepository,
             IPaymentService paymentService,
-            INotificationService notificationService)
+            INotificationService notificationService,
+            IDriverLocationRepository driverLocationRepository,
+            IDriverRepository driverRepository)
         {
             _unitOfWork = unitOfWork;
             _deliveryRepository = deliveryRepository;
             _orderRepository = orderRepository;
             _paymentService = paymentService;
             _notificationService = notificationService;
+            _driverLocationRepository = driverLocationRepository;
+            _driverRepository = driverRepository;
         }
 
 
@@ -176,6 +182,44 @@ namespace lake7.Application.Services
 
             await _orderRepository.UpdateAsync(order);
             
+            // Automatically assign nearby cyclist if order is Received
+            if (status == OrderStatus.Received && order.DeliveryId.HasValue)
+            {
+                var delivery = await _deliveryRepository.GetByIdAsync(order.DeliveryId.Value);
+                if (delivery != null)
+                {
+                    // Find nearby cyclists (Delivery vehicle type)
+                    var nearbyDrivers = await _driverLocationRepository.GetNearbyDriversAsync(delivery.PickupLatitude, delivery.PickupLongitude, 10.0); // 10km radius
+                    var cyclist = nearbyDrivers.FirstOrDefault(d => d.VehicleType.ToLower() == "delivery");
+
+                    if (cyclist != null)
+                    {
+                        delivery.DriverId = cyclist.DriverId;
+                        delivery.Status = RideStatus.Pending;
+                        await _deliveryRepository.UpdateAsync(delivery);
+
+                        // Notify Driver
+                        await _notificationService.NotifyOrderAssignedAsync(cyclist.DriverId, order);
+
+                        // Fetch Driver Profile for User Notification
+                        var driverInfo = await _driverRepository.GetByIdAsync(cyclist.DriverId);
+                        if (driverInfo != null)
+                        {
+                            var driverData = new
+                            {
+                                type = "OrderDriverAssigned",
+                                driverName = driverInfo.Name,
+                                driverPhoneNumber = driverInfo.PhoneNumber,
+                                driverVehicleInfo = driverInfo.VehicleInfo,
+                                driverLicensePlate = driverInfo.LicensePlate,
+                                orderId = order.Id
+                            };
+                            await _notificationService.NotifyUserAsync(order.UserId, driverData);
+                        }
+                    }
+                }
+            }
+
             // Notify User
             await _notificationService.NotifyOrderStatusChangedAsync(order.UserId, order.Status.ToString());
 

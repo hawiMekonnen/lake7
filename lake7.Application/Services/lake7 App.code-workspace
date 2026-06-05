@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "../.."
+		},
+		{
+			"path": "../../../lake7 Driver"
+		},
+		{
+			"path": "../../../lake7 restaurant"
+		},
+		{
+			"path": "../../../lake7 front/lake7Front"
+		},
+		{
+			"path": "../../../lake7 Admin"
+		}
+	],
+	"settings": {}
+}

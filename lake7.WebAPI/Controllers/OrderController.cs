@@ -94,6 +94,27 @@ namespace lake7.WebAPI.Controllers
             if (order == null) return NotFound("No active order found for this driver");
             return Ok(order);
         }
+
+        [Authorize]
+        [HttpGet("user")]
+        public async Task<IActionResult> GetUserOrders()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null) return Unauthorized();
+
+            if (!Guid.TryParse(userIdClaim.Value, out Guid userId))
+            {
+                return BadRequest("Invalid User ID");
+            }
+
+            var orders = await _orderService.GetAllOrdersAsync();
+            var userOrders = orders
+                .Where(o => o.UserId == userId)
+                .OrderByDescending(o => o.CreatedAt)
+                .ToList();
+
+            return Ok(userOrders);
+        }
     }
 }
 

@@ -15,7 +15,7 @@ public class PaymentService : IPaymentService
     }
 
     // Main payment processing (simulate gateway)
-    public async Task<Payment> ProcessPaymentAsync(Guid userId, Guid orderId, Guid? rideId, decimal amount, string method)
+    public async Task<Payment> ProcessPaymentAsync(Guid userId, Guid? orderId, Guid? rideId, decimal amount, string method)
     {
         var payment = new Payment
         {
