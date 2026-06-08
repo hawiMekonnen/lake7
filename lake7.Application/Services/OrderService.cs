@@ -166,33 +166,44 @@ namespace lake7.Application.Services
 
             order.Status = status;
             
-            // Sync with delivery status if applicable
-            if (order.DeliveryId.HasValue)
+            // Automatically assign nearby cyclist if order is Confirmed or Received
+            if ((status == OrderStatus.Confirmed || status == OrderStatus.Received) && order.DeliveryId.HasValue)
             {
                 var delivery = await _deliveryRepository.GetByIdAsync(order.DeliveryId.Value);
-                if (delivery != null)
+                if (delivery != null && !delivery.DriverId.HasValue)
                 {
-                    if (status == OrderStatus.OutForDelivery) delivery.Status = RideStatus.Accepted;
-                    else if (status == OrderStatus.Delivered) delivery.Status = RideStatus.Completed;
-                    else if (status == OrderStatus.Cancelled) delivery.Status = RideStatus.Cancelled;
-                    
-                    await _deliveryRepository.UpdateAsync(delivery);
-                }
-            }
+                    // Find nearby cyclists (Delivery or Bike vehicle type)
+                    var nearbyDrivers = await _driverLocationRepository.GetNearbyDriversAsync(delivery.PickupLatitude, delivery.PickupLongitude, 50.0); // Expanded radius to 50km for easier dev testing
+                    var cyclist = nearbyDrivers.FirstOrDefault(d => d.VehicleType.ToLower() == "delivery" || d.VehicleType.ToLower() == "bike");
 
-            await _orderRepository.UpdateAsync(order);
-            
-            // Automatically assign nearby cyclist if order is Received
-            if (status == OrderStatus.Received && order.DeliveryId.HasValue)
-            {
-                var delivery = await _deliveryRepository.GetByIdAsync(order.DeliveryId.Value);
-                if (delivery != null)
-                {
-                    // Find nearby cyclists (Delivery vehicle type)
-                    var nearbyDrivers = await _driverLocationRepository.GetNearbyDriversAsync(delivery.PickupLatitude, delivery.PickupLongitude, 10.0); // 10km radius
-                    var cyclist = nearbyDrivers.FirstOrDefault(d => d.VehicleType.ToLower() == "delivery");
+                    // Fallback to any online driver if no cyclist is explicitly located
+                    if (cyclist == null)
+                    {
+                        var availableDrivers = await _driverRepository.GetAvailableDriversAsync();
+                        var fallbackDriver = availableDrivers.FirstOrDefault();
+                        if (fallbackDriver != null)
+                        {
+                            delivery.DriverId = fallbackDriver.Id;
+                            delivery.Status = RideStatus.Pending;
+                            await _deliveryRepository.UpdateAsync(delivery);
 
-                    if (cyclist != null)
+                            // Notify Driver
+                            await _notificationService.NotifyOrderAssignedAsync(fallbackDriver.Id, order);
+
+                            // Notify User
+                            var driverData = new
+                            {
+                                type = "OrderDriverAssigned",
+                                driverName = fallbackDriver.Name,
+                                driverPhoneNumber = fallbackDriver.PhoneNumber,
+                                driverVehicleInfo = fallbackDriver.VehicleInfo,
+                                driverLicensePlate = fallbackDriver.LicensePlate,
+                                orderId = order.Id
+                            };
+                            await _notificationService.NotifyUserAsync(order.UserId, driverData);
+                        }
+                    }
+                    else
                     {
                         delivery.DriverId = cyclist.DriverId;
                         delivery.Status = RideStatus.Pending;
@@ -219,6 +230,22 @@ namespace lake7.Application.Services
                     }
                 }
             }
+
+            // Sync with delivery status if applicable
+            if (order.DeliveryId.HasValue)
+            {
+                var delivery = await _deliveryRepository.GetByIdAsync(order.DeliveryId.Value);
+                if (delivery != null)
+                {
+                    if (status == OrderStatus.OutForDelivery) delivery.Status = RideStatus.Accepted;
+                    else if (status == OrderStatus.Delivered) delivery.Status = RideStatus.Completed;
+                    else if (status == OrderStatus.Cancelled) delivery.Status = RideStatus.Cancelled;
+                    
+                    await _deliveryRepository.UpdateAsync(delivery);
+                }
+            }
+
+            await _orderRepository.UpdateAsync(order);
 
             // Notify User
             await _notificationService.NotifyOrderStatusChangedAsync(order.UserId, order.Status.ToString());

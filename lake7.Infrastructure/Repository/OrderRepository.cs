@@ -25,6 +25,7 @@ public class OrderRepository : IOrderRepository
             .Include(o => o.User)
             .Include(o => o.Ride)
             .Include(o => o.Delivery)
+                .ThenInclude(d => d!.Driver)
             .FirstOrDefaultAsync(o => o.Id == id);
     }
 
@@ -32,7 +33,8 @@ public class OrderRepository : IOrderRepository
     {
         _context.Orders.Update(order);
         await _context.SaveChangesAsync();
-        return order;
+        // Return fresh loaded order with includes
+        return await GetByIdAsync(order.Id) ?? order;
     }
 
     public async Task<List<Order>> GetAllAsync()
@@ -41,6 +43,7 @@ public class OrderRepository : IOrderRepository
             .Include(o => o.User)
             .Include(o => o.Ride)
             .Include(o => o.Delivery)
+                .ThenInclude(d => d!.Driver)
             .ToListAsync();
     }
 
@@ -50,6 +53,7 @@ public class OrderRepository : IOrderRepository
             .Include(o => o.User)
             .Include(o => o.Ride)
             .Include(o => o.Delivery)
+                .ThenInclude(d => d!.Driver)
             .Where(o => o.Status == status)
             .ToListAsync();
     }

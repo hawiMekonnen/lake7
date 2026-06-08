@@ -150,6 +150,7 @@ namespace lake7.Application.Services
                 ride.CompletedAt = DateTime.UtcNow;
                 // Handle transaction
                 decimal amount = finalFare ?? 50.0m;
+                ride.Fare = (double)amount;
                 try 
                 {
                     await _paymentService.ProcessPaymentAsync(ride.UserId, null, ride.Id, amount, "Wallet");

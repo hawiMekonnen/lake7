@@ -20,6 +20,8 @@ namespace lake7.WebAPI.Controllers
         private readonly IPaymentService _paymentService;
         private readonly IUserService _userService;
         private readonly IAdminService _adminService;
+        private readonly IRestaurantService _restaurantService;
+        private readonly IOrderService _orderService;
         private readonly IConfiguration _configuration;
 
         public AdminController(
@@ -29,6 +31,8 @@ namespace lake7.WebAPI.Controllers
             IPaymentService paymentService,
             IUserService userService,
             IAdminService adminService,
+            IRestaurantService restaurantService,
+            IOrderService orderService,
             IConfiguration configuration)
         {
             _driverService = driverService;
@@ -37,6 +41,8 @@ namespace lake7.WebAPI.Controllers
             _paymentService = paymentService;
             _userService = userService;
             _adminService = adminService;
+            _restaurantService = restaurantService;
+            _orderService = orderService;
             _configuration = configuration;
         }
 
@@ -163,13 +169,17 @@ namespace lake7.WebAPI.Controllers
         public async Task<IActionResult> GetAllUsers()
         {
             var users = await _userService.GetUserAsync();
+            var restaurants = await _restaurantService.GetAllRestaurantsAsync();
+            var restaurantEmails = new HashSet<string>(restaurants.Select(r => r.Email.ToLower()));
+
             var result = users.Select(u => new {
                 id = u.Id,
                 name = u.Name,
                 email = u.Email,
                 phoneNumber = u.PhoneNumber,
                 totalRides = u.Rides.Count,
-                totalDeliveries = u.Deliveries.Count
+                totalDeliveries = u.Deliveries.Count,
+                role = (restaurantEmails.Contains(u.Email.ToLower()) || u.Name.ToLower().StartsWith("res")) ? "Restaurant" : "Passenger"
             });
             return Ok(result);
         }
@@ -216,6 +226,42 @@ namespace lake7.WebAPI.Controllers
                 method = "Card", // Simplified
                 date = p.CreatedAt.ToString("yyyy-MM-dd"),
                 status = p.Status.ToString().ToLower()
+            });
+            return Ok(result);
+        }
+
+        [HttpGet("restaurants")]
+        public async Task<IActionResult> GetAllRestaurants()
+        {
+            var restaurants = await _restaurantService.GetAllRestaurantsAsync();
+            var result = restaurants.Select(r => new {
+                id = r.Id,
+                name = r.Name,
+                email = r.Email,
+                phoneNumber = r.PhoneNumber,
+                address = r.Address,
+                description = r.Description,
+                imageUrl = r.ImageUrl,
+                category = r.Category,
+                isActive = r.IsActive
+            });
+            return Ok(result);
+        }
+
+        [HttpGet("orders")]
+        public async Task<IActionResult> GetAllOrders()
+        {
+            var orders = await _orderService.GetAllOrdersAsync();
+            var result = orders.Select(o => new {
+                id = o.Id,
+                user = o.User?.Name ?? "Unknown",
+                deliveryId = o.DeliveryId,
+                totalAmount = o.TotalAmount,
+                status = o.Status.ToString().ToLower(),
+                createdAt = o.CreatedAt.ToString("yyyy-MM-dd HH:mm"),
+                pickup = o.Delivery?.PickupAddress ?? "N/A",
+                dropoff = o.Delivery?.DropoffAddress ?? "N/A",
+                cyclist = o.Delivery?.Driver?.Name ?? "Unassigned"
             });
             return Ok(result);
         }

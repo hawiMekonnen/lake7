@@ -20,6 +20,7 @@ namespace lake7.Application.Helpers
                 Id = ride.Id,
                 PickupLocation = ride.PickupLocation,
                 DropoffLocation = cleanDropoff,
+                Fare = ride.Fare,
                 Status = ride.Status,
                 RequestedAt = ride.RequestedAt,
                 UpdatedAt = ride.UpdatedAt,
